@@ -3,11 +3,12 @@ import numpy as np
 
 
 class Model:
-    def __init__(self, data_x, data_y, test_data, k=None):
+    def __init__(self, data_x, data_y, test_data, k=None, learning_rate=1):
         self.data_x = data_x
         self.data_y = data_y
         self.test_data = test_data
         self.k = k
+        self.learning_rate = learning_rate
 
     def train(self):
         pass
@@ -32,6 +33,25 @@ class KNN(Model):
         return predictions
 
 
+class Perceptron(Model):
+
+    def train(self):
+        weights = np.zeros([3, 5])
+        for epoch in range(1000):
+            for example, label in zip(self.data_x, self.data_y):
+                y_hat = np.argmax(np.dot(weights, example.transpose()))
+                if y_hat != label:
+                    weights[label] = weights[label] + self.learning_rate * example
+                    weights[y_hat] = weights[y_hat] - self.learning_rate * example
+        return weights
+
+    def predict(self, weights):
+        predictions = []
+        for test_example in self.test_data:
+            predictions.append(np.argmax(np.dot(weights, test_example.transpose())))
+        return predictions
+
+
 def receive_data(examples_file, examples_labels_file, test_data_file):
     tmp_data_examples_x = []
     with open(examples_file) as tmp_file:
@@ -42,7 +62,7 @@ def receive_data(examples_file, examples_labels_file, test_data_file):
     examples_y = np.loadtxt(examples_labels_file, dtype=int)
 
     tmp_data_test_x = []
-    with open(examples_file) as tmp_file:
+    with open(test_data_file) as tmp_file:
         for line in tmp_file:
             tmp_data_test_x.append([list(map(float, x.split(','))) for x in line.split(' ')])
 
@@ -55,4 +75,18 @@ if __name__ == '__main__':
     output_file_name = sys.argv[4]
     knn = KNN(data_x, data_y, test_data, 3)
     knn_test_predictions = knn.predict()
-    print(knn_test_predictions)
+    #print(knn_test_predictions)
+    perceptron = Perceptron(data_x, data_y, test_data, learning_rate=0.5)
+    perceptron_weights = perceptron.train()
+    perceptron_test_predictions = perceptron.predict(perceptron_weights)
+    print(perceptron_test_predictions)
+
+    '''
+    TODO :
+    
+    - Try adding bias 
+    
+    
+    
+    
+    '''
