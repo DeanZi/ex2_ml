@@ -91,18 +91,12 @@ if __name__ == '__main__':
     output_file_name = sys.argv[4]
     knn = KNN(data_x, data_y, test_data, k=3)
     knn_test_predictions = knn.predict()
-    #print(knn_test_predictions)
     perceptron = Perceptron(data_x, data_y, test_data, learning_rate=0.5)
     perceptron_weights = perceptron.train()
-    print(perceptron_weights)
-    print("#############")
     perceptron_test_predictions = perceptron.predict(perceptron_weights)
-    #print(perceptron_test_predictions)
-    svm = SVM(data_x, data_y, test_data, learning_rate=0.5, lambda_svm=0.5)
+    svm = SVM(data_x, data_y, test_data, learning_rate=0.5, lambda_svm=0)
     svm_weights = svm.train()
-    print(svm_weights)
     svm_test_predictions = svm.predict(svm_weights)
-    #print(svm_test_predictions)
 
 
 
@@ -113,5 +107,6 @@ if __name__ == '__main__':
     
     - Try adding bias 
     - Try shuffle data
+    - Add feature selection and other normalizations
     
     '''
