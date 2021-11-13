@@ -37,7 +37,13 @@ class Perceptron(Model):
     def train(self, data_x, data_y):
         weights = np.zeros([3, 5])
         bias = 0
-        for epoch in range(1000):
+        initial_learning_rate = self.learning_rate
+        for epoch in range(8000):
+            random_state = np.random.get_state()
+            np.random.shuffle(data_x)
+            np.random.set_state(random_state)
+            np.random.shuffle(data_y)
+            self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
                 if y_hat != label:
@@ -53,7 +59,13 @@ class SVM(Model):
         weights = np.zeros([3, 5])
         classifications = [0, 1, 2]
         bias = 0
-        for epoch in range(1000):
+        initial_learning_rate = self.learning_rate
+        for epoch in range(8000):
+            random_state = np.random.get_state()
+            np.random.shuffle(data_x)
+            np.random.set_state(random_state)
+            np.random.shuffle(data_y)
+            self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
                 if y_hat != label:
@@ -77,7 +89,11 @@ class PA(Model):
     def train(self, data_x, data_y):
         weights = np.zeros([3, 5])
         bias = 0
-        for epoch in range(1000):
+        for epoch in range(4000):
+            random_state = np.random.get_state()
+            np.random.shuffle(data_x)
+            np.random.set_state(random_state)
+            np.random.shuffle(data_y)
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
                 if y_hat != label:
@@ -143,6 +159,22 @@ def validate(model, data_x, data_y, k=5):
     return (successes/len_of_validation) * 100
 
 
+def find_minmax(data):
+    minmax_per_feature = list()
+    for i in range(5):
+        all_values_per_feature = []
+        for flower in data:
+            all_values_per_feature.append(flower[0][i])
+        min_value_for_feature = min(all_values_per_feature)
+        max_value_for_feature = max(all_values_per_feature)
+        minmax_per_feature.append([min_value_for_feature, max_value_for_feature])
+    return minmax_per_feature
+
+def normalize_data(data):
+    minmax_per_feature = find_minmax(data)
+    for flower in data:
+	    for i in range(5):
+		    flower[0][i] = (flower[0][i] - minmax_per_feature[i][0]) / (minmax_per_feature[i][1] - minmax_per_feature[i][0])
 
 
 
@@ -150,16 +182,17 @@ def validate(model, data_x, data_y, k=5):
 if __name__ == '__main__':
     data_x, data_y, test_data = receive_and_shuffle_data(sys.argv[1], sys.argv[2], sys.argv[3])
     output_file_name = sys.argv[4]
+    normalize_data(data_x)
     knn = KNN(k=3)
     knn_accuracy = validate(knn, data_x, data_y)
     print(knn_accuracy, "THIS IS KNN ACC")
     knn_test_predictions = knn.predict(data_x, data_y, test_data)
-    perceptron = Perceptron(learning_rate=0.8)
+    perceptron = Perceptron(learning_rate=0.02)
     perceptron_accuracy = validate(perceptron, data_x, data_y)
     print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
     perceptron_weights = perceptron.train(data_x, data_y)
     perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
-    svm = SVM(learning_rate=0.8, lambda_svm=0)
+    svm = SVM(learning_rate=0.02, lambda_svm=0.2)
     svm_accuracy = validate(svm, data_x, data_y)
     print(svm_accuracy, "THIS IS SVM ACC")
     svm_weights = svm.train(data_x, data_y)
@@ -175,8 +208,9 @@ if __name__ == '__main__':
     '''
     TODO :
     
-    - Try shuffle data
-    - Add feature selection and other normalizations
-    - Create the report
+    - Try shuffle data (understand why results differ so much)
+    - Try feature selection ?
+    - Create the report (understand how to choose hyper parameters, how many epochs?)
+    - Do I nee k-fold cross validation?
     
     '''
