@@ -56,16 +56,34 @@ class SVM(Model):
             for example, label in zip(self.data_x, self.data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()))
                 if y_hat != label:
-                    weights[label] = (1-self.learning_rate*self.lambda_svm)*weights[label] + self.learning_rate * example
-                    weights[y_hat] = (1-self.learning_rate*self.lambda_svm)*weights[y_hat] - self.learning_rate * example
+                    weights[label] = (1 - self.learning_rate * self.lambda_svm) * weights[
+                        label] + self.learning_rate * example
+                    weights[y_hat] = (1 - self.learning_rate * self.lambda_svm) * weights[
+                        y_hat] - self.learning_rate * example
                     for classification in classifications:
                         if classification != label and classification != y_hat:
-                            weights[classification] = (1-self.learning_rate*self.lambda_svm) * weights[classification]
+                            weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[
+                                classification]
                 else:
                     for classification in classifications:
                         weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[classification]
         return weights
 
+
+class PA(Model):
+
+    def train(self):
+        weights = np.zeros([3, 5])
+        for epoch in range(1000):
+            for example, label in zip(self.data_x, self.data_y):
+                y_hat = np.argmax(np.dot(weights, example.transpose()))
+                if y_hat != label:
+                    hinge_loss = max(0, 1 - np.dot(weights[label], example.transpose()) + np.dot(weights[y_hat],
+                                                                                                 example.transpose()))
+                    tau = hinge_loss / (2 * (np.linalg.norm(example) ** 2))
+                    weights[label] = weights[label] + tau * example
+                    weights[y_hat] = weights[y_hat] - tau * example
+        return weights
 
 
 def receive_data(examples_file, examples_labels_file, test_data_file):
@@ -86,6 +104,14 @@ def receive_data(examples_file, examples_labels_file, test_data_file):
     return examples_x, examples_y, test_data
 
 
+def print_output_file(knn_test_predictions, perceptron_test_predictions, svm_test_predictions, pa_test_predictions,
+                      output_file):
+    with open(output_file, 'w') as output_file:
+        for knn_yhat, perceptron_yhat, svm_yhat, pa_yhat in zip(knn_test_predictions, perceptron_test_predictions,
+                                                                svm_test_predictions, pa_test_predictions):
+            output_file.write(f"knn: {knn_yhat}, perceptron: {perceptron_yhat}, svm: {svm_yhat}, pa: {pa_yhat}\n")
+
+
 if __name__ == '__main__':
     data_x, data_y, test_data = receive_data(sys.argv[1], sys.argv[2], sys.argv[3])
     output_file_name = sys.argv[4]
@@ -97,10 +123,11 @@ if __name__ == '__main__':
     svm = SVM(data_x, data_y, test_data, learning_rate=0.5, lambda_svm=0)
     svm_weights = svm.train()
     svm_test_predictions = svm.predict(svm_weights)
-
-
-
-
+    pa = PA(data_x, data_y, test_data)
+    pa_weights = pa.train()
+    pa_test_predictions = pa.predict(pa_weights)
+    print_output_file(knn_test_predictions, pa_test_predictions, svm_test_predictions, pa_test_predictions,
+                      output_file_name)
 
     '''
     TODO :
