@@ -89,7 +89,7 @@ class PA(Model):
     def train(self, data_x, data_y):
         weights = np.zeros([3, 5])
         bias = 0
-        for epoch in range(4000):
+        for epoch in range(1000):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
@@ -115,10 +115,10 @@ def receive_and_shuffle_data(examples_file, examples_labels_file, test_data_file
     examples_x = np.array(tmp_data_examples_x)
     examples_y = np.loadtxt(examples_labels_file, dtype=int)
 
-    #random_state = np.random.get_state()
-    #np.random.shuffle(examples_x)
-    #np.random.set_state(random_state)
-    #np.random.shuffle(examples_y)
+    # random_state = np.random.get_state()
+    # np.random.shuffle(examples_x)
+    # np.random.set_state(random_state)
+    # np.random.shuffle(examples_y)
 
     tmp_data_test_x = []
     with open(test_data_file) as tmp_file:
@@ -156,7 +156,7 @@ def validate(model, data_x, data_y, k=5):
     else:
         model_predictions = model.predict(trainning_x, trainning_y, validation_x)
     successes = sum(1 for i, j in zip(validation_y, model_predictions) if i == j)
-    return (successes/len_of_validation) * 100
+    return (successes / len_of_validation) * 100
 
 
 def find_minmax(data):
@@ -170,13 +170,13 @@ def find_minmax(data):
         minmax_per_feature.append([min_value_for_feature, max_value_for_feature])
     return minmax_per_feature
 
+
 def normalize_data(data):
     minmax_per_feature = find_minmax(data)
     for flower in data:
-	    for i in range(5):
-		    flower[0][i] = (flower[0][i] - minmax_per_feature[i][0]) / (minmax_per_feature[i][1] - minmax_per_feature[i][0])
-
-
+        for i in range(5):
+            flower[0][i] = (flower[0][i] - minmax_per_feature[i][0]) / (
+                        minmax_per_feature[i][1] - minmax_per_feature[i][0])
 
 
 if __name__ == '__main__':
@@ -187,12 +187,12 @@ if __name__ == '__main__':
     knn_accuracy = validate(knn, data_x, data_y)
     print(knn_accuracy, "THIS IS KNN ACC")
     knn_test_predictions = knn.predict(data_x, data_y, test_data)
-    perceptron = Perceptron(learning_rate=0.02)
+    perceptron = Perceptron(learning_rate=0.002)
     perceptron_accuracy = validate(perceptron, data_x, data_y)
     print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
     perceptron_weights = perceptron.train(data_x, data_y)
     perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
-    svm = SVM(learning_rate=0.02, lambda_svm=0.2)
+    svm = SVM(learning_rate=0.002, lambda_svm=0.02)
     svm_accuracy = validate(svm, data_x, data_y)
     print(svm_accuracy, "THIS IS SVM ACC")
     svm_weights = svm.train(data_x, data_y)
@@ -211,6 +211,6 @@ if __name__ == '__main__':
     - Try shuffle data (understand why results differ so much)
     - Try feature selection ?
     - Create the report (understand how to choose hyper parameters, how many epochs?)
-    - Do I nee k-fold cross validation?
+    - Do I need k-fold cross validation?
     
     '''
