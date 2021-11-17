@@ -38,7 +38,7 @@ class Perceptron(Model):
         weights = np.zeros([3, 5])
         bias = 0
         initial_learning_rate = self.learning_rate
-        for epoch in range(8000):
+        for epoch in range(6000):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
@@ -60,7 +60,7 @@ class SVM(Model):
         classifications = [0, 1, 2]
         bias = 0
         initial_learning_rate = self.learning_rate
-        for epoch in range(8000):
+        for epoch in range(3000):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
@@ -78,9 +78,9 @@ class SVM(Model):
                         if classification != label and classification != y_hat:
                             weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[
                                 classification]
-                else:
-                    for classification in classifications:
-                        weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[classification]
+                # else:
+                #     for classification in classifications:
+                #         weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[classification]
         return weights
 
 
@@ -89,7 +89,7 @@ class PA(Model):
     def train(self, data_x, data_y):
         weights = np.zeros([3, 5])
         bias = 0
-        for epoch in range(1000):
+        for epoch in range(15):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
@@ -139,24 +139,32 @@ def print_output_file(knn_test_predictions, perceptron_test_predictions, svm_tes
 
 
 def validate(model, data_x, data_y, k=5):
+    accuracy_per_fold = []
     len_of_validation = math.ceil(len(data_x) / k)
-    validation_x = []
-    validation_y = []
-    for index_to_validation in range(len_of_validation):
-        validation_x.append(data_x[index_to_validation])
-        validation_y.append(data_y[index_to_validation])
-    trainning_x = []
-    trainning_y = []
-    for index_to_trainning in range(len_of_validation, len(data_x)):
-        trainning_x.append(data_x[index_to_trainning])
-        trainning_y.append(data_y[index_to_trainning])
-    if not isinstance(model, KNN):
-        model_weights = model.train(trainning_x, trainning_y)
-        model_predictions = model.predict(model_weights, validation_x)
-    else:
-        model_predictions = model.predict(trainning_x, trainning_y, validation_x)
-    successes = sum(1 for i, j in zip(validation_y, model_predictions) if i == j)
-    return (successes / len_of_validation) * 100
+    for _ in range(k):
+        random_state = np.random.get_state()
+        np.random.shuffle(data_x)
+        np.random.set_state(random_state)
+        np.random.shuffle(data_y)
+        validation_x = []
+        validation_y = []
+        for index_to_validation in range(len_of_validation):
+            validation_x.append(data_x[index_to_validation])
+            validation_y.append(data_y[index_to_validation])
+        trainning_x = []
+        trainning_y = []
+        for index_to_trainning in range(len_of_validation, len(data_x)):
+            trainning_x.append(data_x[index_to_trainning])
+            trainning_y.append(data_y[index_to_trainning])
+        if not isinstance(model, KNN):
+            model_weights = model.train(trainning_x, trainning_y)
+            model_predictions = model.predict(model_weights, validation_x)
+        else:
+            model_predictions = model.predict(trainning_x, trainning_y, validation_x)
+        successes = sum(1 for i, j in zip(validation_y, model_predictions) if i == j)
+        accuracy_per_fold.append((successes / len_of_validation) * 100)
+    return sum(accuracy_per_fold) / len(accuracy_per_fold)
+
 
 
 def find_minmax(data):
@@ -184,22 +192,22 @@ if __name__ == '__main__':
     output_file_name = sys.argv[4]
     normalize_data(data_x)
     knn = KNN(k=3)
-    knn_accuracy = validate(knn, data_x, data_y)
-    print(knn_accuracy, "THIS IS KNN ACC")
+    # knn_accuracy = validate(knn, data_x, data_y)
+    # print(knn_accuracy, "THIS IS KNN ACC")
     knn_test_predictions = knn.predict(data_x, data_y, test_data)
-    perceptron = Perceptron(learning_rate=0.002)
-    perceptron_accuracy = validate(perceptron, data_x, data_y)
-    print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
+    perceptron = Perceptron(learning_rate=0.02)
+    # perceptron_accuracy = validate(perceptron, data_x, data_y)
+    # print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
     perceptron_weights = perceptron.train(data_x, data_y)
     perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
-    svm = SVM(learning_rate=0.002, lambda_svm=0.02)
-    svm_accuracy = validate(svm, data_x, data_y)
-    print(svm_accuracy, "THIS IS SVM ACC")
+    svm = SVM(learning_rate=0.02, lambda_svm=0.08)
+    # svm_accuracy = validate(svm, data_x, data_y)
+    # print(svm_accuracy, "THIS IS SVM ACC")
     svm_weights = svm.train(data_x, data_y)
     svm_test_predictions = svm.predict(svm_weights, test_data)
     pa = PA()
-    pa_accuracy = validate(pa, data_x, data_y)
-    print(pa_accuracy, "THIS IS PA ACC")
+    # pa_accuracy = validate(pa, data_x, data_y)
+    # print(pa_accuracy, "THIS IS PA ACC")
     pa_weights = pa.train(data_x, data_y)
     pa_test_predictions = pa.predict(pa_weights, test_data)
     print_output_file(knn_test_predictions, pa_test_predictions, svm_test_predictions, pa_test_predictions,
@@ -208,7 +216,7 @@ if __name__ == '__main__':
     '''
     TODO :
     
-    - Try shuffle data (understand why results differ so much)
+    - Understand why results differ so much, maybe needed seed?
     - Try feature selection ?
     - Create the report (understand how to choose hyper parameters, how many epochs?)
     - Do I need k-fold cross validation?
