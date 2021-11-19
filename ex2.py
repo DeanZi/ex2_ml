@@ -35,7 +35,7 @@ class KNN(Model):
 class Perceptron(Model):
 
     def train(self, data_x, data_y):
-        weights = np.zeros([3, 5])
+        weights = np.zeros([3, 4])
         bias = 0
         initial_learning_rate = self.learning_rate
         for epoch in range(2000):
@@ -56,7 +56,7 @@ class Perceptron(Model):
 class SVM(Model):
 
     def train(self, data_x, data_y):
-        weights = np.zeros([3, 5])
+        weights = np.zeros([3, 4])
         classifications = [0, 1, 2]
         bias = 0
         initial_learning_rate = self.learning_rate
@@ -87,7 +87,7 @@ class SVM(Model):
 class PA(Model):
 
     def train(self, data_x, data_y):
-        weights = np.zeros([3, 5])
+        weights = np.zeros([3, 4])
         bias = 0
         for epoch in range(7000):
             random_state = np.random.get_state()
@@ -161,31 +161,48 @@ def validate(model, data_x, data_y, k=5):
     return sum(accuracy_per_fold) / len(accuracy_per_fold)
 
 
+def calculate_f_score_per_feature(data_x, data_y):
+    features_f_score = []
+    for feature in range(5):
+        label_0 = []
+        label_1 = []
+        label_2 = []
+        for example, label in zip(data_x, data_y):
+            if label == 0:
+                label_0.append(example[0][feature])
+            if label == 1:
+                label_1.append(example[0][feature])
+            if label == 2:
+                label_2.append(example[0][feature])
+        avg_of_all = (sum(label_0) + sum(label_1) + sum(label_2)) / len(data_x)
+        avg_label_0 = sum(label_0) / len(label_0)
+        avg_label_1 = sum(label_1) / len(label_1)
+        avg_label_2 = sum(label_2) / len(label_2)
+        numerator = (len(label_0) * pow((avg_label_0 - avg_of_all),2)) + (len(label_1) * pow((avg_label_1 - avg_of_all),2)) + (len(label_2) * pow((avg_label_2 - avg_of_all),2))
+        sum_of_square_0 = sum([pow((x-avg_label_0),2) for x in label_0])
+        sum_of_square_1 = sum([pow((x-avg_label_1),2) for x in label_1])
+        sum_of_square_2 = sum([pow((x-avg_label_2),2) for x in label_2])
+        len_of_groups_minus_one = len(data_x) - 3
+        denominator = (sum_of_square_0 + sum_of_square_1 + sum_of_square_2) / len_of_groups_minus_one
+        features_f_score.append(numerator/denominator)
+    return features_f_score
 
-# def find_minmax(data):
-#     minmax_per_feature = list()
-#     for i in range(5):
-#         all_values_per_feature = []
-#         for flower in data:
-#             all_values_per_feature.append(flower[0][i])
-#         min_value_for_feature = min(all_values_per_feature)
-#         max_value_for_feature = max(all_values_per_feature)
-#         minmax_per_feature.append([min_value_for_feature, max_value_for_feature])
-#     return minmax_per_feature
-#
-#
-# def normalize_data(data):
-#     minmax_per_feature = find_minmax(data)
-#     for flower in data:
-#         for i in range(5):
-#             flower[0][i] = (flower[0][i] - minmax_per_feature[i][0]) / (
-#                         minmax_per_feature[i][1] - minmax_per_feature[i][0])
+
+def clean_features_from_data(data_x):
+    new_data_x = []
+    for flower in data_x:
+        flower = np.delete(flower, 4, 1)
+        new_data_x.append(flower)
+    return new_data_x
 
 
 if __name__ == '__main__':
     data_x, data_y, test_data = receive_data(sys.argv[1], sys.argv[2], sys.argv[3])
     output_file_name = sys.argv[4]
-    # normalize_data(data_x)
+    # features_f_score = calculate_f_score_per_feature(data_x, data_y)
+    # data_x = clean_features_from_data(data_x)
+    # test_data = clean_features_from_data(test_data)
+    # print(features_f_score)
     knn = KNN(k=3)
     # knn_accuracy = validate(knn, data_x, data_y)
     # print(knn_accuracy, "THIS IS KNN ACC")
