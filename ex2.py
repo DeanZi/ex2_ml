@@ -4,10 +4,11 @@ import numpy as np
 
 
 class Model:
-    def __init__(self, k=None, learning_rate=1, lambda_svm=1):
+    def __init__(self, k=None, learning_rate=1, lambda_svm=1, epochs=1000):
         self.k = k
         self.learning_rate = learning_rate
         self.lambda_svm = lambda_svm
+        self.epochs = epochs
 
     def predict(self, weights, test_data):
         predictions = []
@@ -41,7 +42,7 @@ class Perceptron(Model):
         weights = np.zeros([3, 4])
         bias = 0
         initial_learning_rate = self.learning_rate
-        for epoch in range(2000):
+        for epoch in range(self.epochs):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
@@ -65,7 +66,7 @@ class SVM(Model):
         classifications = [0, 1, 2]
         bias = 0
         initial_learning_rate = self.learning_rate
-        for epoch in range(2000):
+        for epoch in range(self.epochs):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
@@ -97,7 +98,7 @@ class PA(Model):
         weights = np.zeros([3, 4])
         bias = 0
         initial_learning_rate = self.learning_rate
-        for epoch in range(7000):
+        for epoch in range(self.epochs):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
@@ -217,17 +218,17 @@ if __name__ == '__main__':
     knn = KNN(k=7)
     # print(validate(knn, data_x, data_y), '%')
     knn_test_predictions = knn.predict(data_x, data_y, test_data)
-    perceptron = Perceptron(learning_rate=0.02)
+    perceptron = Perceptron(learning_rate=0.01, epochs=4000)
     # perceptron_accuracy = validate(perceptron, data_x, data_y)
     # print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
     perceptron_weights = perceptron.train(data_x, data_y)
     perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
-    svm = SVM(learning_rate=0.02, lambda_svm=0.08)
+    svm = SVM(learning_rate=0.005, lambda_svm=1, epochs=3000)
     # svm_accuracy = validate(svm, data_x, data_y)
     # print(svm_accuracy, "THIS IS SVM ACC")
     svm_weights = svm.train(data_x, data_y)
     svm_test_predictions = svm.predict(svm_weights, test_data)
-    pa = PA()
+    pa = PA(learning_rate=0.005, epochs=4000)
     # pa_accuracy = validate(pa, data_x, data_y)
     # print(pa_accuracy, "THIS IS PA ACC")
     pa_weights = pa.train(data_x, data_y)
