@@ -39,10 +39,10 @@ class Perceptron(Model):
         bias = 0
         initial_learning_rate = self.learning_rate
         for epoch in range(2000):
-            # random_state = np.random.get_state()
-            # np.random.shuffle(data_x)
-            # np.random.set_state(random_state)
-            # np.random.shuffle(data_y)
+            random_state = np.random.get_state()
+            np.random.shuffle(data_x)
+            np.random.set_state(random_state)
+            np.random.shuffle(data_y)
             self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
@@ -61,10 +61,10 @@ class SVM(Model):
         bias = 0
         initial_learning_rate = self.learning_rate
         for epoch in range(2000):
-            # random_state = np.random.get_state()
-            # np.random.shuffle(data_x)
-            # np.random.set_state(random_state)
-            # np.random.shuffle(data_y)
+            random_state = np.random.get_state()
+            np.random.shuffle(data_x)
+            np.random.set_state(random_state)
+            np.random.shuffle(data_y)
             self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
@@ -89,7 +89,7 @@ class PA(Model):
     def train(self, data_x, data_y):
         weights = np.zeros([3, 5])
         bias = 0
-        for epoch in range(15):
+        for epoch in range(7000):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
@@ -137,10 +137,10 @@ def validate(model, data_x, data_y, k=5):
     accuracy_per_fold = []
     len_of_validation = math.ceil(len(data_x) / k)
     for _ in range(k):
-        # random_state = np.random.get_state()
-        # np.random.shuffle(data_x)
-        # np.random.set_state(random_state)
-        # np.random.shuffle(data_y)
+        random_state = np.random.get_state()
+        np.random.shuffle(data_x)
+        np.random.set_state(random_state)
+        np.random.shuffle(data_y)
         validation_x = []
         validation_y = []
         for index_to_validation in range(len_of_validation):
@@ -162,24 +162,24 @@ def validate(model, data_x, data_y, k=5):
 
 
 
-def find_minmax(data):
-    minmax_per_feature = list()
-    for i in range(5):
-        all_values_per_feature = []
-        for flower in data:
-            all_values_per_feature.append(flower[0][i])
-        min_value_for_feature = min(all_values_per_feature)
-        max_value_for_feature = max(all_values_per_feature)
-        minmax_per_feature.append([min_value_for_feature, max_value_for_feature])
-    return minmax_per_feature
-
-
-def normalize_data(data):
-    minmax_per_feature = find_minmax(data)
-    for flower in data:
-        for i in range(5):
-            flower[0][i] = (flower[0][i] - minmax_per_feature[i][0]) / (
-                        minmax_per_feature[i][1] - minmax_per_feature[i][0])
+# def find_minmax(data):
+#     minmax_per_feature = list()
+#     for i in range(5):
+#         all_values_per_feature = []
+#         for flower in data:
+#             all_values_per_feature.append(flower[0][i])
+#         min_value_for_feature = min(all_values_per_feature)
+#         max_value_for_feature = max(all_values_per_feature)
+#         minmax_per_feature.append([min_value_for_feature, max_value_for_feature])
+#     return minmax_per_feature
+#
+#
+# def normalize_data(data):
+#     minmax_per_feature = find_minmax(data)
+#     for flower in data:
+#         for i in range(5):
+#             flower[0][i] = (flower[0][i] - minmax_per_feature[i][0]) / (
+#                         minmax_per_feature[i][1] - minmax_per_feature[i][0])
 
 
 if __name__ == '__main__':
@@ -187,22 +187,22 @@ if __name__ == '__main__':
     output_file_name = sys.argv[4]
     # normalize_data(data_x)
     knn = KNN(k=3)
-    knn_accuracy = validate(knn, data_x, data_y)
-    print(knn_accuracy, "THIS IS KNN ACC")
+    # knn_accuracy = validate(knn, data_x, data_y)
+    # print(knn_accuracy, "THIS IS KNN ACC")
     knn_test_predictions = knn.predict(data_x, data_y, test_data)
     perceptron = Perceptron(learning_rate=0.02)
-    perceptron_accuracy = validate(perceptron, data_x, data_y)
-    print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
+    # perceptron_accuracy = validate(perceptron, data_x, data_y)
+    # print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
     perceptron_weights = perceptron.train(data_x, data_y)
     perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
     svm = SVM(learning_rate=0.02, lambda_svm=0.08)
-    svm_accuracy = validate(svm, data_x, data_y)
-    print(svm_accuracy, "THIS IS SVM ACC")
+    # svm_accuracy = validate(svm, data_x, data_y)
+    # print(svm_accuracy, "THIS IS SVM ACC")
     svm_weights = svm.train(data_x, data_y)
     svm_test_predictions = svm.predict(svm_weights, test_data)
     pa = PA()
-    pa_accuracy = validate(pa, data_x, data_y)
-    print(pa_accuracy, "THIS IS PA ACC")
+    # pa_accuracy = validate(pa, data_x, data_y)
+    # print(pa_accuracy, "THIS IS PA ACC")
     pa_weights = pa.train(data_x, data_y)
     pa_test_predictions = pa.predict(pa_weights, test_data)
     print_output_file(knn_test_predictions, perceptron_test_predictions, svm_test_predictions, pa_test_predictions,
@@ -211,9 +211,7 @@ if __name__ == '__main__':
     '''
     TODO :
     
-    - Understand why results differ so much, maybe needed seed?
-    - Try feature selection ?
+    - Try feature selection 
     - Create the report (understand how to choose hyper parameters, how many epochs?)
-    - Do I need k-fold cross validation?
     
     '''
