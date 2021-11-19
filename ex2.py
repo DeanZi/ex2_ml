@@ -23,7 +23,10 @@ class KNN(Model):
         for flower in test_data:
             distances = {}
             for i, example in enumerate(data_x):
-                distances[i] = np.linalg.norm(flower - example)
+                sum_for_distance = 0
+                for feature_data_x, feature_test in zip(example[0].tolist(), flower[0].tolist()):
+                    sum_for_distance += (feature_test-feature_data_x)**2
+                distances[i] = math.sqrt(sum_for_distance)
             sorted_distances = dict(sorted(distances.items(), key=lambda item: item[1]))
             labels_of_neigbours = []
             for i in range(self.k):
@@ -49,7 +52,9 @@ class Perceptron(Model):
                 if y_hat != label:
                     weights[label] = weights[label] + self.learning_rate * example
                     weights[y_hat] = weights[y_hat] - self.learning_rate * example
-                    bias += label
+                    bias -= self.learning_rate
+                else:
+                    bias += self.learning_rate
         return weights
 
 
@@ -73,14 +78,16 @@ class SVM(Model):
                         label] + self.learning_rate * example
                     weights[y_hat] = (1 - self.learning_rate * self.lambda_svm) * weights[
                         y_hat] - self.learning_rate * example
-                    bias += label
+                    bias -= self.learning_rate
                     for classification in classifications:
                         if classification != label and classification != y_hat:
                             weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[
                                 classification]
-                # else:
-                #     for classification in classifications:
-                #         weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[classification]
+                else:
+                    bias += self.learning_rate
+
+                    # for classification in classifications:
+                    #     weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[classification]
         return weights
 
 
@@ -89,20 +96,24 @@ class PA(Model):
     def train(self, data_x, data_y):
         weights = np.zeros([3, 4])
         bias = 0
+        initial_learning_rate = self.learning_rate
         for epoch in range(7000):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
             np.random.shuffle(data_y)
+            self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
                 if y_hat != label:
                     hinge_loss = max(0, 1 - np.dot(weights[label], example.transpose()) + np.dot(weights[y_hat],
                                                                                                  example.transpose()))
                     tau = hinge_loss / (2 * (np.linalg.norm(example) ** 2))
-                    weights[label] = weights[label] + tau * example
-                    weights[y_hat] = weights[y_hat] - tau * example
-                    bias += label
+                    weights[label] = weights[label] + tau * example * self.learning_rate
+                    weights[y_hat] = weights[y_hat] - tau * example * self.learning_rate
+                    bias -= self.learning_rate
+                else:
+                    bias += self.learning_rate
         return weights
 
 
@@ -200,12 +211,11 @@ if __name__ == '__main__':
     data_x, data_y, test_data = receive_data(sys.argv[1], sys.argv[2], sys.argv[3])
     output_file_name = sys.argv[4]
     # features_f_score = calculate_f_score_per_feature(data_x, data_y)
-    # data_x = clean_features_from_data(data_x)
-    # test_data = clean_features_from_data(test_data)
+    data_x = clean_features_from_data(data_x)
+    test_data = clean_features_from_data(test_data)
     # print(features_f_score)
-    knn = KNN(k=3)
-    # knn_accuracy = validate(knn, data_x, data_y)
-    # print(knn_accuracy, "THIS IS KNN ACC")
+    knn = KNN(k=7)
+    # print(validate(knn, data_x, data_y), '%')
     knn_test_predictions = knn.predict(data_x, data_y, test_data)
     perceptron = Perceptron(learning_rate=0.02)
     # perceptron_accuracy = validate(perceptron, data_x, data_y)
@@ -228,7 +238,7 @@ if __name__ == '__main__':
     '''
     TODO :
     
-    - Try feature selection 
     - Create the report (understand how to choose hyper parameters, how many epochs?)
+    - Add learning rate to PA
     
     '''
