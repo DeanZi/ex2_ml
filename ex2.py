@@ -38,11 +38,11 @@ class Perceptron(Model):
         weights = np.zeros([3, 5])
         bias = 0
         initial_learning_rate = self.learning_rate
-        for epoch in range(6000):
-            random_state = np.random.get_state()
-            np.random.shuffle(data_x)
-            np.random.set_state(random_state)
-            np.random.shuffle(data_y)
+        for epoch in range(2000):
+            # random_state = np.random.get_state()
+            # np.random.shuffle(data_x)
+            # np.random.set_state(random_state)
+            # np.random.shuffle(data_y)
             self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
@@ -60,11 +60,11 @@ class SVM(Model):
         classifications = [0, 1, 2]
         bias = 0
         initial_learning_rate = self.learning_rate
-        for epoch in range(3000):
-            random_state = np.random.get_state()
-            np.random.shuffle(data_x)
-            np.random.set_state(random_state)
-            np.random.shuffle(data_y)
+        for epoch in range(2000):
+            # random_state = np.random.get_state()
+            # np.random.shuffle(data_x)
+            # np.random.set_state(random_state)
+            # np.random.shuffle(data_y)
             self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
@@ -106,7 +106,7 @@ class PA(Model):
         return weights
 
 
-def receive_and_shuffle_data(examples_file, examples_labels_file, test_data_file):
+def receive_data(examples_file, examples_labels_file, test_data_file):
     tmp_data_examples_x = []
     with open(examples_file) as tmp_file:
         for line in tmp_file:
@@ -114,11 +114,6 @@ def receive_and_shuffle_data(examples_file, examples_labels_file, test_data_file
 
     examples_x = np.array(tmp_data_examples_x)
     examples_y = np.loadtxt(examples_labels_file, dtype=int)
-
-    # random_state = np.random.get_state()
-    # np.random.shuffle(examples_x)
-    # np.random.set_state(random_state)
-    # np.random.shuffle(examples_y)
 
     tmp_data_test_x = []
     with open(test_data_file) as tmp_file:
@@ -142,10 +137,10 @@ def validate(model, data_x, data_y, k=5):
     accuracy_per_fold = []
     len_of_validation = math.ceil(len(data_x) / k)
     for _ in range(k):
-        random_state = np.random.get_state()
-        np.random.shuffle(data_x)
-        np.random.set_state(random_state)
-        np.random.shuffle(data_y)
+        # random_state = np.random.get_state()
+        # np.random.shuffle(data_x)
+        # np.random.set_state(random_state)
+        # np.random.shuffle(data_y)
         validation_x = []
         validation_y = []
         for index_to_validation in range(len_of_validation):
@@ -188,7 +183,7 @@ def normalize_data(data):
 
 
 if __name__ == '__main__':
-    data_x, data_y, test_data = receive_and_shuffle_data(sys.argv[1], sys.argv[2], sys.argv[3])
+    data_x, data_y, test_data = receive_data(sys.argv[1], sys.argv[2], sys.argv[3])
     output_file_name = sys.argv[4]
     # normalize_data(data_x)
     knn = KNN(k=3)
@@ -210,7 +205,7 @@ if __name__ == '__main__':
     print(pa_accuracy, "THIS IS PA ACC")
     pa_weights = pa.train(data_x, data_y)
     pa_test_predictions = pa.predict(pa_weights, test_data)
-    print_output_file(knn_test_predictions, pa_test_predictions, svm_test_predictions, pa_test_predictions,
+    print_output_file(knn_test_predictions, perceptron_test_predictions, svm_test_predictions, pa_test_predictions,
                       output_file_name)
 
     '''
