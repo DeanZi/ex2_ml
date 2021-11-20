@@ -239,7 +239,6 @@ if __name__ == '__main__':
     '''
     TODO :
     
-    - Create the report (understand how to choose hyper parameters, how many epochs?)
-    - Add learning rate to PA
-    
+    - Finish the report (Add some code to it)
+    - Maybe try perceptron with 3000 epochs
     '''
