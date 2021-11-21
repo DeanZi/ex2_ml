@@ -29,10 +29,10 @@ class KNN(Model):
                     sum_for_distance += (feature_test-feature_data_x)**2
                 distances[i] = math.sqrt(sum_for_distance)
             sorted_distances = dict(sorted(distances.items(), key=lambda item: item[1]))
-            labels_of_neigbours = []
+            labels_of_neighbours = []
             for i in range(self.k):
-                labels_of_neigbours.append(data_y[list(sorted_distances.keys())[i]])
-            predictions.append(max(set(labels_of_neigbours), key=labels_of_neigbours.count))
+                labels_of_neighbours.append(data_y[list(sorted_distances.keys())[i]])
+            predictions.append(max(set(labels_of_neighbours), key=labels_of_neighbours.count))
         return predictions
 
 
@@ -96,25 +96,19 @@ class PA(Model):
 
     def train(self, data_x, data_y):
         weights = np.zeros([3, 4])
-        bias = 0
-        initial_learning_rate = self.learning_rate
         for epoch in range(self.epochs):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
             np.random.shuffle(data_y)
-            self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
-                y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
+                y_hat = np.argmax(np.dot(weights, example.transpose()))
                 if y_hat != label:
                     hinge_loss = max(0, 1 - np.dot(weights[label], example.transpose()) + np.dot(weights[y_hat],
                                                                                                  example.transpose()))
                     tau = hinge_loss / (2 * (np.linalg.norm(example) ** 2))
-                    weights[label] = weights[label] + tau * example * self.learning_rate
-                    weights[y_hat] = weights[y_hat] - tau * example * self.learning_rate
-                    bias -= self.learning_rate
-                else:
-                    bias += self.learning_rate
+                    weights[label] = weights[label] + tau * example
+                    weights[y_hat] = weights[y_hat] - tau * example
         return weights
 
 
@@ -208,37 +202,61 @@ def clean_features_from_data(data_x):
     return new_data_x
 
 
+def remove_outlires(data_x, data_y):
+    threshold = 2
+    outliers = []
+    for index, flower in enumerate(data_x):
+        mean = np.mean(flower)
+        std = np.std(flower)
+        features_values = []
+        for feature in np.nditer(flower[0]):
+            features_values.append(feature)
+        features_mean = np.mean(features_values)
+    new_data_x = np.delete(data_x, outliers)
+    new_data_y = np.delete(data_y, outliers)
+    z_score = (feature - mean) / std  # calculate z-score
+    if abs(z_score) > threshold:  # identify outliers
+        if index not in outliers:
+            outliers.append(index)  # add to the empty list
+    return new_data_x, new_data_y
+
+
+
+
 if __name__ == '__main__':
     data_x, data_y, test_data = receive_data(sys.argv[1], sys.argv[2], sys.argv[3])
     output_file_name = sys.argv[4]
     # features_f_score = calculate_f_score_per_feature(data_x, data_y)
     data_x = clean_features_from_data(data_x)
     test_data = clean_features_from_data(test_data)
+    # data_x, data_y = remove_outlires(data_x, data_y)
+    print(len(data_x))
     # print(features_f_score)
     knn = KNN(k=7)
-    # print(validate(knn, data_x, data_y), '%')
-    knn_test_predictions = knn.predict(data_x, data_y, test_data)
-    perceptron = Perceptron(learning_rate=0.01, epochs=4000)
-    # perceptron_accuracy = validate(perceptron, data_x, data_y)
-    # print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
-    perceptron_weights = perceptron.train(data_x, data_y)
-    perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
+    print(validate(knn, data_x, data_y), '%')
+    # knn_test_predictions = knn.predict(data_x, data_y, test_data)
+    perceptron = Perceptron(learning_rate=0.01, epochs=3000)
+    perceptron_accuracy = validate(perceptron, data_x, data_y)
+    print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
+    # perceptron_weights = perceptron.train(data_x, data_y)
+    # perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
     svm = SVM(learning_rate=0.005, lambda_svm=1, epochs=3000)
-    # svm_accuracy = validate(svm, data_x, data_y)
-    # print(svm_accuracy, "THIS IS SVM ACC")
-    svm_weights = svm.train(data_x, data_y)
-    svm_test_predictions = svm.predict(svm_weights, test_data)
-    pa = PA(learning_rate=0.005, epochs=4000)
-    # pa_accuracy = validate(pa, data_x, data_y)
-    # print(pa_accuracy, "THIS IS PA ACC")
-    pa_weights = pa.train(data_x, data_y)
-    pa_test_predictions = pa.predict(pa_weights, test_data)
-    print_output_file(knn_test_predictions, perceptron_test_predictions, svm_test_predictions, pa_test_predictions,
-                      output_file_name)
+    svm_accuracy = validate(svm, data_x, data_y)
+    print(svm_accuracy, "THIS IS SVM ACC")
+    # svm_weights = svm.train(data_x, data_y)
+    # svm_test_predictions = svm.predict(svm_weights, test_data)
+    pa = PA(epochs=4000)
+    pa_accuracy = validate(pa, data_x, data_y)
+    print(pa_accuracy, "THIS IS PA ACC")
+    # pa_weights = pa.train(data_x, data_y)
+    # pa_test_predictions = pa.predict(pa_weights, test_data)
+    # print_output_file(knn_test_predictions, perceptron_test_predictions, svm_test_predictions, pa_test_predictions,
+    #                   output_file_name)
 
     '''
     TODO :
     
+    - Finish z-score normalization (see what I have done with minmax)
     - Finish the report (Add some code to it)
-    - Maybe try perceptron with 3000 epochs
+    
     '''
