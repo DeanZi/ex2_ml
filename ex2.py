@@ -39,8 +39,7 @@ class KNN(Model):
 class Perceptron(Model):
 
     def train(self, data_x, data_y):
-        weights = np.zeros([3, 4])
-        bias = 0
+        weights = np.zeros([3, 5])
         initial_learning_rate = self.learning_rate
         for epoch in range(self.epochs):
             random_state = np.random.get_state()
@@ -49,22 +48,18 @@ class Perceptron(Model):
             np.random.shuffle(data_y)
             self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
-                y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
+                y_hat = np.argmax(np.dot(weights, example.transpose()))
                 if y_hat != label:
                     weights[label] = weights[label] + self.learning_rate * example
                     weights[y_hat] = weights[y_hat] - self.learning_rate * example
-                    bias -= self.learning_rate
-                else:
-                    bias += self.learning_rate
         return weights
 
 
 class SVM(Model):
 
     def train(self, data_x, data_y):
-        weights = np.zeros([3, 4])
+        weights = np.zeros([3, 5])
         classifications = [0, 1, 2]
-        bias = 0
         initial_learning_rate = self.learning_rate
         for epoch in range(self.epochs):
             random_state = np.random.get_state()
@@ -73,46 +68,37 @@ class SVM(Model):
             np.random.shuffle(data_y)
             self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
             for example, label in zip(data_x, data_y):
-                y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
+                y_hat = np.argmax(np.dot(weights, example.transpose()))
                 if y_hat != label:
                     weights[label] = (1 - self.learning_rate * self.lambda_svm) * weights[
                         label] + self.learning_rate * example
                     weights[y_hat] = (1 - self.learning_rate * self.lambda_svm) * weights[
                         y_hat] - self.learning_rate * example
-                    bias -= self.learning_rate
                     for classification in classifications:
                         if classification != label and classification != y_hat:
                             weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[
                                 classification]
-                else:
-                    bias += self.learning_rate
 
-                    # for classification in classifications:
-                    #     weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[classification]
         return weights
 
 
 class PA(Model):
 
     def train(self, data_x, data_y):
-        bias = 0
-        weights = np.zeros([3, 4])
+        weights = np.zeros([3, 5])
         for epoch in range(self.epochs):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
             np.random.shuffle(data_y)
             for example, label in zip(data_x, data_y):
-                y_hat = np.argmax(np.dot(weights, example.transpose()) + bias)
+                y_hat = np.argmax(np.dot(weights, example.transpose()))
                 hinge_loss = max(0, 1 - np.dot(weights[label], example.transpose()) + np.dot(weights[y_hat],
                                                                                              example.transpose()))
                 tau = hinge_loss / (2 * (np.linalg.norm(example) ** 2))
                 if y_hat != label:
                     weights[label] = weights[label] + tau * example
                     weights[y_hat] = weights[y_hat] - tau * example
-                    bias -= tau
-                else:
-                    bias += tau
         return weights
 
 
@@ -235,6 +221,19 @@ def normalize_data(data_x, data_y, test_data):
 
     return new_data_x, new_data_y, test_data
 
+
+def add_bias_to_data(data_x, test_data):
+    new_data_x = []
+    new_test_data = []
+    for flower in data_x:
+        flower = np.append(flower, [[1]], 1)
+        new_data_x.append(flower)
+    for flower in test_data:
+        flower = np.append(flower, [[1]], 1)
+        new_test_data.append(flower)
+    return new_data_x, new_test_data
+
+
 if __name__ == '__main__':
     data_x, data_y, test_data = receive_data(sys.argv[1], sys.argv[2], sys.argv[3])
     output_file_name = sys.argv[4]
@@ -242,6 +241,7 @@ if __name__ == '__main__':
     data_x = clean_features_from_data(data_x)
     test_data = clean_features_from_data(test_data)
     data_x, data_y, test_data = normalize_data(data_x, data_y, test_data)
+    data_x, test_data = add_bias_to_data(data_x, test_data)
     # print(features_f_score)
     knn = KNN(k=7)
     # print(validate(knn, data_x, data_y), '%')
