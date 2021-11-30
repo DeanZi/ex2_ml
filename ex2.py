@@ -40,19 +40,26 @@ class Perceptron(Model):
 
     def train(self, data_x, data_y):
         weights = np.zeros([3, 5])
+        best_weights = []
         initial_learning_rate = self.learning_rate
+        min_loss = sys.maxsize
         for epoch in range(self.epochs):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
             np.random.shuffle(data_y)
             self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
+            loss = 0
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()))
                 if y_hat != label:
+                    loss += 1
                     weights[label] = weights[label] + self.learning_rate * example
                     weights[y_hat] = weights[y_hat] - self.learning_rate * example
-        return weights
+            if loss < min_loss:
+                min_loss = loss
+                best_weights = weights
+        return best_weights
 
 
 class SVM(Model):
@@ -60,16 +67,22 @@ class SVM(Model):
     def train(self, data_x, data_y):
         weights = np.zeros([3, 5])
         classifications = [0, 1, 2]
+        best_weights = []
         initial_learning_rate = self.learning_rate
+        min_loss = sys.maxsize
         for epoch in range(self.epochs):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
             np.random.shuffle(data_y)
             self.learning_rate = (1 / (1 + epoch)) * initial_learning_rate
+            loss = 0
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()))
-                if y_hat != label:
+                hinge_loss = max(0, 1 - np.dot(weights[label], example.transpose()) + np.dot(weights[y_hat],
+                                                                                             example.transpose()))
+                if hinge_loss > 0:
+                    loss += 1
                     weights[label] = (1 - self.learning_rate * self.lambda_svm) * weights[
                         label] + self.learning_rate * example
                     weights[y_hat] = (1 - self.learning_rate * self.lambda_svm) * weights[
@@ -78,28 +91,39 @@ class SVM(Model):
                         if classification != label and classification != y_hat:
                             weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[
                                 classification]
+            if loss < min_loss:
+                min_loss = loss
+                best_weights = weights
 
-        return weights
+        return best_weights
 
 
 class PA(Model):
 
     def train(self, data_x, data_y):
         weights = np.zeros([3, 5])
+        best_weights = []
+        min_loss = sys.maxsize
         for epoch in range(self.epochs):
             random_state = np.random.get_state()
             np.random.shuffle(data_x)
             np.random.set_state(random_state)
             np.random.shuffle(data_y)
+            loss = 0
             for example, label in zip(data_x, data_y):
                 y_hat = np.argmax(np.dot(weights, example.transpose()))
                 hinge_loss = max(0, 1 - np.dot(weights[label], example.transpose()) + np.dot(weights[y_hat],
                                                                                              example.transpose()))
                 tau = hinge_loss / (2 * (np.linalg.norm(example) ** 2))
-                if y_hat != label:
+                if hinge_loss > 0:
+                    loss += 1
                     weights[label] = weights[label] + tau * example
                     weights[y_hat] = weights[y_hat] - tau * example
-        return weights
+            if loss < min_loss:
+                min_loss = loss
+                best_weights = weights
+
+        return best_weights
 
 
 def receive_data(examples_file, examples_labels_file, test_data_file):
@@ -238,37 +262,30 @@ if __name__ == '__main__':
     data_x, data_y, test_data = receive_data(sys.argv[1], sys.argv[2], sys.argv[3])
     output_file_name = sys.argv[4]
     # features_f_score = calculate_f_score_per_feature(data_x, data_y)
-    data_x = clean_features_from_data(data_x)
-    test_data = clean_features_from_data(test_data)
-    data_x, data_y, test_data = normalize_data(data_x, data_y, test_data)
-    data_x, test_data = add_bias_to_data(data_x, test_data)
+    # data_x, data_y, test_data = normalize_data(data_x, data_y, test_data)
+    # data_x, test_data = add_bias_to_data(data_x, test_data)
+    # data_x = clean_features_from_data(data_x)
+    # test_data = clean_features_from_data(test_data)
     # print(features_f_score)
+    perceptron = Perceptron(learning_rate=0.0001, epochs=3000)
+    perceptron_accuracy = validate(perceptron, data_x, data_y)
+    print(perceptron_accuracy, f"THIS IS PERCEPTRON ACC")
+    # perceptron_weights = perceptron.train(data_x, data_y)
+    # perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
+    svm = SVM(learning_rate=0.0001, lambda_svm=1, epochs=3000)
+    svm_accuracy = validate(svm, data_x, data_y)
+    print(svm_accuracy, f"THIS IS SVM ACC")
+    # svm_weights = svm.train(data_x, data_y)
+    # svm_test_predictions = svm.predict(svm_weights, test_data)
+    pa = PA(epochs=3000)
+    pa_accuracy = validate(pa, data_x, data_y)
+    print(pa_accuracy, f"THIS IS PA ACC")
+    # pa_weights = pa.train(data_x, data_y)
+    # pa_test_predictions = pa.predict(pa_weights, test_data)
     knn = KNN(k=7)
-    # print(validate(knn, data_x, data_y), '%')
-    knn_test_predictions = knn.predict(data_x, data_y, test_data)
-    perceptron = Perceptron(learning_rate=0.01, epochs=3000)
-    # perceptron_accuracy = validate(perceptron, data_x, data_y)
-    # print(perceptron_accuracy, "THIS IS PERCEPTRON ACC")
-    perceptron_weights = perceptron.train(data_x, data_y)
-    perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
-    svm = SVM(learning_rate=0.005, lambda_svm=1, epochs=3000)
-    # svm_accuracy = validate(svm, data_x, data_y)
-    # print(svm_accuracy, "THIS IS SVM ACC")
-    svm_weights = svm.train(data_x, data_y)
-    svm_test_predictions = svm.predict(svm_weights, test_data)
-    pa = PA(epochs=4000)
-    # pa_accuracy = validate(pa, data_x, data_y)
-    # print(pa_accuracy, "THIS IS PA ACC")
-    pa_weights = pa.train(data_x, data_y)
-    pa_test_predictions = pa.predict(pa_weights, test_data)
-    print_output_file(knn_test_predictions, perceptron_test_predictions, svm_test_predictions, pa_test_predictions,
-                      output_file_name)
+    print(f"KNN: ", validate(knn, data_x, data_y), '%')
+    # knn_test_predictions = knn.predict(data_x, data_y, test_data)
+    # print_output_file(knn_test_predictions, perceptron_test_predictions, svm_test_predictions, pa_test_predictions,
+    #                   output_file_name)
 
-    '''
-    TODO :
-    
-    - Finish z-score normalization (see what I have done with minmax)
-    - Finish the report (Add some code to it)
-    - Run the file on planet
-    
-    '''
+
