@@ -58,7 +58,8 @@ class Perceptron(Model):
                     weights[y_hat] = weights[y_hat] - self.learning_rate * example
             if loss < min_loss:
                 min_loss = loss
-                best_weights = weights
+                best_weights = np.copy(weights)
+            weights = best_weights
         return best_weights
 
 
@@ -85,16 +86,17 @@ class SVM(Model):
                     loss += 1
                     weights[label] = (1 - self.learning_rate * self.lambda_svm) * weights[
                         label] + self.learning_rate * example
-                    weights[y_hat] = (1 - self.learning_rate * self.lambda_svm) * weights[
-                        y_hat] - self.learning_rate * example
+                    if y_hat != label:
+                        weights[y_hat] = (1 - self.learning_rate * self.lambda_svm) * weights[
+                            y_hat] - self.learning_rate * example
                     for classification in classifications:
                         if classification != label and classification != y_hat:
                             weights[classification] = (1 - self.learning_rate * self.lambda_svm) * weights[
                                 classification]
             if loss < min_loss:
                 min_loss = loss
-                best_weights = weights
-
+                best_weights = np.copy(weights)
+            weights = best_weights
         return best_weights
 
 
@@ -121,8 +123,8 @@ class PA(Model):
                     weights[y_hat] = weights[y_hat] - tau * example
             if loss < min_loss:
                 min_loss = loss
-                best_weights = weights
-
+                best_weights = np.copy(weights)
+            weights = best_weights
         return best_weights
 
 
@@ -262,30 +264,30 @@ if __name__ == '__main__':
     data_x, data_y, test_data = receive_data(sys.argv[1], sys.argv[2], sys.argv[3])
     output_file_name = sys.argv[4]
     # features_f_score = calculate_f_score_per_feature(data_x, data_y)
-    # data_x, data_y, test_data = normalize_data(data_x, data_y, test_data)
-    # data_x, test_data = add_bias_to_data(data_x, test_data)
-    # data_x = clean_features_from_data(data_x)
-    # test_data = clean_features_from_data(test_data)
+    data_x, data_y, test_data = normalize_data(data_x, data_y, test_data)
+    data_x, test_data = add_bias_to_data(data_x, test_data)
+    data_x = clean_features_from_data(data_x)
+    test_data = clean_features_from_data(test_data)
     # print(features_f_score)
-    perceptron = Perceptron(learning_rate=0.0001, epochs=3000)
-    perceptron_accuracy = validate(perceptron, data_x, data_y)
-    print(perceptron_accuracy, f"THIS IS PERCEPTRON ACC")
-    # perceptron_weights = perceptron.train(data_x, data_y)
-    # perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
-    svm = SVM(learning_rate=0.0001, lambda_svm=1, epochs=3000)
-    svm_accuracy = validate(svm, data_x, data_y)
-    print(svm_accuracy, f"THIS IS SVM ACC")
-    # svm_weights = svm.train(data_x, data_y)
-    # svm_test_predictions = svm.predict(svm_weights, test_data)
-    pa = PA(epochs=3000)
-    pa_accuracy = validate(pa, data_x, data_y)
-    print(pa_accuracy, f"THIS IS PA ACC")
-    # pa_weights = pa.train(data_x, data_y)
-    # pa_test_predictions = pa.predict(pa_weights, test_data)
+    perceptron = Perceptron(learning_rate=0.01, epochs=3000)
+    # perceptron_accuracy = validate(perceptron, data_x, data_y)
+    # print(perceptron_accuracy, f"THIS IS PERCEPTRON ACC")
+    perceptron_weights = perceptron.train(data_x, data_y)
+    perceptron_test_predictions = perceptron.predict(perceptron_weights, test_data)
+    svm = SVM(learning_rate=0.005, lambda_svm=1, epochs=3000)
+    # svm_accuracy = validate(svm, data_x, data_y)
+    # print(svm_accuracy, f"THIS IS SVM ACC")
+    svm_weights = svm.train(data_x, data_y)
+    svm_test_predictions = svm.predict(svm_weights, test_data)
+    pa = PA(epochs=4000)
+    # pa_accuracy = validate(pa, data_x, data_y)
+    # print(pa_accuracy, f"THIS IS PA ACC")
+    pa_weights = pa.train(data_x, data_y)
+    pa_test_predictions = pa.predict(pa_weights, test_data)
     knn = KNN(k=7)
-    print(f"KNN: ", validate(knn, data_x, data_y), '%')
-    # knn_test_predictions = knn.predict(data_x, data_y, test_data)
-    # print_output_file(knn_test_predictions, perceptron_test_predictions, svm_test_predictions, pa_test_predictions,
-    #                   output_file_name)
+    # print(f"KNN: ", validate(knn, data_x, data_y), '%')
+    knn_test_predictions = knn.predict(data_x, data_y, test_data)
+    print_output_file(knn_test_predictions, perceptron_test_predictions, svm_test_predictions, pa_test_predictions,
+                      output_file_name)
 
 
