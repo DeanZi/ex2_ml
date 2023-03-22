@@ -23,7 +23,7 @@ The implemented models are:
 ### Dataset
 The code uses the Iris flowers dataset, a commonly used dataset in machine learning.
 
-# Report
+### Report
 
 Implementation details:
 
@@ -133,10 +133,4 @@ PA (epochs = 4000) ACC:  84.75 %
 PA (epochs = 5000) ACC:  86.25 % 
 PA (epochs = 6000) ACC:  82.5 % 
 PA (epochs = 7000) ACC:  84.58333333333333 %
-![image](https://user-images.githubusercontent.com/45519333/227002854-7b3046eb-fb92-41ac-b504-3deabf17a266.png)
-
-
-
-
-
-
+![image](https://user-images.githubusercontent.com/45519333/227003352-acf30038-bb91-4f30-b192-95d48e8736da.png)
