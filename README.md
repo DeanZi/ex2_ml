@@ -33,30 +33,30 @@ Implementation details:
 
 *	Tried min max normalization – didn’t improve even degraded the accuracy.
 
-•	Tried Z-score normalization – did not seem to affect much.
+*	Tried Z-score normalization – did not seem to affect much.
 
-•	Implemented Anova f-score feature selection and found out that feature 5 is not contributing much for the classification process, hence got rid of that feature in train and test datasets.
+*	Implemented Anova f-score feature selection and found out that feature 5 is not contributing much for the classification process, hence got rid of that feature in train and test datasets.
 
-•	To choose my hyperparameters I ran a search on some different values.
+*	To choose my hyperparameters I ran a search on some different values.
 
 ### Results
 
 * K for KNN:
 
-  KNN ACC for k=7:  95.41666666666667 %![image](https://user-images.githubusercontent.com/45519333/227004749-440cae96-f354-4cb9-9503-a3d1647eb644.png)
+  KNN ACC for k=7:  95.41666666666667 %
 
 
 * Learning rate:
 
-  PERCEPTRON (l_r = 0.01) ACC:  90.0 %![image](https://user-images.githubusercontent.com/45519333/227004708-b2fc7874-d9fb-405f-a10b-306e166306f7.png)
-  SVM (l_r = 0.005) ACC:  87.5 %![image](https://user-images.githubusercontent.com/45519333/227004647-31cc8113-1c4b-4fad-adb6-7b1d3de81024.png)
+  PERCEPTRON (l_r = 0.01) ACC:  90.0 %
+  SVM (l_r = 0.005) ACC:  87.5 %
 
 * Lambda:
 
-  SVM (lambda = 1) ACC:  88.75 % ![image](https://user-images.githubusercontent.com/45519333/227004867-38e2dc5f-0a41-4c90-9011-4458434141ce.png)
+  SVM (lambda = 1) ACC:  88.75 % 
 
 * Epochs:
 
-  PERCEPTRON (epochs = 3000) ACC:  88.33333333333333 % ![image](https://user-images.githubusercontent.com/45519333/227004942-a4e185a7-e90c-44b4-91b8-4765981c52a6.png)
-  SVM (epochs = 3000) ACC:  90.0 % ![image](https://user-images.githubusercontent.com/45519333/227004979-37505f0d-234b-4f7d-905f-7f1a322f0b28.png)
-  PA (epochs = 2000) ACC:  87.08333333333333 % ![image](https://user-images.githubusercontent.com/45519333/227005021-6a144104-50c1-4f45-80e5-377590303cd7.png)
+  PERCEPTRON (epochs = 3000) ACC:  88.33333333333333 % 
+  SVM (epochs = 3000) ACC:  90.0 % 
+  PA (epochs = 2000) ACC:  87.08333333333333 % 
