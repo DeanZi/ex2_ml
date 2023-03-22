@@ -41,22 +41,20 @@ Implementation details:
 
 ### Results
 
-** K for KNN:
+K for KNN:
+* KNN ACC for k=7:  95.41666666666667 %
 
-  *KNN ACC for k=7:  95.41666666666667 %
+Learning rate:
 
+* PERCEPTRON (l_r = 0.01) ACC:  90.0 %
+* SVM (l_r = 0.005) ACC:  87.5 %
 
-** Learning rate:
+Lambda:
 
-  *PERCEPTRON (l_r = 0.01) ACC:  90.0 %
-  *SVM (l_r = 0.005) ACC:  87.5 %
+* SVM (lambda = 1) ACC:  88.75 % 
 
-** Lambda:
+Epochs:
 
-  *SVM (lambda = 1) ACC:  88.75 % 
-
-** Epochs:
-
-  *PERCEPTRON (epochs = 3000) ACC:  88.33333333333333 %
-  *SVM (epochs = 3000) ACC:  90.0 % 
-  *PA (epochs = 2000) ACC:  87.08333333333333 % 
+* PERCEPTRON (epochs = 3000) ACC:  88.33333333333333 %
+* SVM (epochs = 3000) ACC:  90.0 % 
+* PA (epochs = 2000) ACC:  87.08333333333333 % 
