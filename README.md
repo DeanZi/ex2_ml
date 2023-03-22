@@ -58,3 +58,7 @@ Epochs:
 * PERCEPTRON (epochs = 3000) ACC:  88.33333333333333 %
 * SVM (epochs = 3000) ACC:  90.0 % 
 * PA (epochs = 2000) ACC:  87.08333333333333 % 
+
+### Author
+This code was written by *DeanZi* as part of a university programming project. Feel free to use and modify it as you like.
+
